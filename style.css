@@ -1,0 +1,178 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#141414;
+    color:white;
+    font-family:Arial,sans-serif;
+}
+
+
+/* Navbar */
+nav{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px 50px;
+    position:fixed;
+    top:0;
+    width:100%;
+    z-index:10;
+    transition:0.3s;
+}
+
+nav h1{
+    color:#e50914;
+    font-size:30px;
+}
+
+nav ul{
+    display:flex;
+    list-style:none;
+    gap:20px;
+}
+
+nav ul li{
+    cursor:pointer;
+}
+
+
+/* Banner */
+.banner{
+    height:80vh;
+    background:url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba')
+    center/cover;
+    display:flex;
+    align-items:center;
+    padding-left:50px;
+    padding-top:80px;
+    position:relative;
+}
+
+
+/* Dark Gradient */
+.banner::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(
+        to top,
+        #141414,
+        transparent
+    );
+}
+
+
+.content{
+    position:relative;
+    z-index:2;
+}
+
+
+.content h2{
+    font-size:60px;
+    margin-bottom:20px;
+}
+
+
+/* Buttons */
+button{
+    padding:10px 20px;
+    border:none;
+    margin-right:10px;
+    cursor:pointer;
+    font-size:16px;
+    border-radius:5px;
+}
+
+
+button:hover{
+    background:#e50914;
+    color:white;
+}
+
+
+/* Movies Section */
+.movies{
+    padding:20px 50px;
+}
+
+
+.row{
+    display:flex;
+    gap:15px;
+    overflow-x:auto;
+    margin-top:15px;
+}
+
+
+.row img{
+    width:200px;
+    height:300px;
+    object-fit:cover;
+    border-radius:5px;
+    transition:0.3s;
+}
+
+
+.row img:hover{
+    transform:scale(1.12);
+    cursor:pointer;
+}
+
+
+/* Mobile Responsive */
+@media(max-width:600px){
+
+    nav{
+        padding:15px 20px;
+    }
+
+
+    nav ul{
+        display:none;
+    }
+
+
+    .content h2{
+        font-size:35px;
+    }
+
+
+    .banner{
+        padding-left:20px;
+    }
+
+
+    .movies{
+        padding:20px;
+    }
+
+
+    .row img{
+        width:150px;
+    }
+
+}
+
+.card{
+    width:200px;
+}
+
+.card img{
+    width:200px;
+    height:300px;
+    object-fit:cover;
+    border-radius:5px;
+}
+
+.card h3{
+    margin-top:10px;
+}
+
+.card p{
+    color:#aaa;
+}
