@@ -1,0 +1,33 @@
+
+name: Netflix Clone CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify application files
+        run: |
+          test -f index.html
+          test -f style.css
+          test -f script.js
+          test -f Dockerfile
+
+      - name: Build Docker image
+        run: docker build -t netflix-clone:test .
+
+      - name: Verify Docker image
+        run: docker image inspect netflix-clone:test
