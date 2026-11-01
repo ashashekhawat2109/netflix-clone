@@ -1,18 +1,19 @@
-
 name: Netflix Clone CI/CD
 
 on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'k8s/**'
   workflow_dispatch:
 
 permissions:
   contents: read
-  id-token: write
+  packages: write
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,8 +27,18 @@ jobs:
           test -f script.js
           test -f Dockerfile
 
-      - name: Build Docker image
-        run: docker build -t netflix-clone:test .
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify Docker image
-        run: docker image inspect netflix-clone:test
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
