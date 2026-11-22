@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - 'k8s/**'
   workflow_dispatch:
 
 permissions:
@@ -13,14 +11,14 @@ permissions:
   packages: write
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Verify application files
+      - name: Verify Application Files
         run: |
           test -f index.html
           test -f style.css
@@ -34,11 +32,43 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
+      - name: Build Docker Image
+        run: |
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
+          docker build -t "$IMAGE:latest" -t "$IMAGE:$GITHUB_SHA" .
+
+      - name: Push Docker Image to GHCR
+        run: |
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
+          docker push "$IMAGE:latest"
+          docker push "$IMAGE:$GITHUB_SHA"
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Install kind
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.30.0/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+
+      - name: Create Kubernetes Cluster
+        run: |
+          kind create cluster --name netflix-ci --wait 120s
+
+      - name: Load Docker Image into Kubernetes
+        run: |
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
+          kind load docker-image "$IMAGE:$GITHUB_SHA" --name netflix-ci
+
+      - name: Deploy Application
+        run: |
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
+          kubectl apply -f k8s/service.yaml
+          sed "s|image: netflix-clone:v1|image: $IMAGE:$GITHUB_SHA|" k8s/deployment.yaml | kubectl apply -f -
+
+      - name: Verify Kubernetes Deployment
+        run: |
+          kubectl rollout status deployment/netflix-deployment --timeout=180s
+          kubectl get pods
+          kubectl get services
